@@ -184,8 +184,9 @@ for epoch in range(num_epochs):
 
         if (iters % 500 == 0) or ((epoch == num_epochs - 1) and (i == len(data_loader)-1)):
             with torch.no_grad():
-                fake = generator(fix_noise).detach().cpu()
+                fake = generator(fix_noise).detach().cpu() #generator(fix_noise): เครือข่าย Generator ใช้เวกเตอร์สุ่มคงที่ (fix_noise) เพื่อสร้างภาพปลอม // .detach ป้องกันการคำนวณ Gradient สำหรับภาพเหล่านี้
             img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
+            
         iters += 1
 
         
@@ -240,5 +241,5 @@ plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=
 plt.subplot(1,2,2)
 plt.axis("off")
 plt.title("Fake Images")
-plt.imshow(np.transpose(img_list[-1],(1,2,0)))
+plt.imshow(np.transpose(img_list[-1],(1,2,0)))#(1, 2, 0) ระบุการเรียงลำดับแกนใหม่ #การใช้ np.transpose(img_list[-1], (1, 2, 0)) เปลี่ยนแกนจาก (C, H, W) ไปเป็น (H, W, C) เพื่อให้เหมาะสมกับการแสดงผล
 plt.show()
