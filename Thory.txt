@@ -1,0 +1,85 @@
+การคำนวณขนาด output ของแต่ละเลเยอร์ใน DCGAN นั้นจะเกี่ยวข้องกับพารามิเตอร์ของ convolutional layer เช่น kernel size, stride, padding และ output padding (สำหรับ transposed convolution) การที่ layer แรกได้รูปขนาด 4x4 เป็นผลมาจากการตั้งค่าของพารามิเตอร์เหล่านี้ใน `nn.ConvTranspose2d`
+
+โครงสร้างของเลเยอร์แรกใน generator มีลักษณะดังนี้:
+```python
+nn.ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False)
+```
+
+มาดูความหมายของพารามิเตอร์เหล่านี้:
+- `nz`: จำนวนช่อง (channels) ของ input noise vector
+- `ngf * 8`: จำนวนช่อง (channels) ของ output feature maps
+- `4`: ขนาดของ kernel (kernel size)
+- `1`: ค่า stride (stride)
+- `0`: ค่า padding (padding)
+- `bias=False`: ไม่ใช้ bias term
+
+เราสามารถคำนวณขนาด output ของ `ConvTranspose2d` layer ได้โดยใช้สมการ:
+
+Output size=(I−1)×stride−2×padding+kernel size+output padding     **************
+
+สำหรับ nn.Conv2d (ใช้ใน discriminator สำหรับการทำ convolution):
+
+Output size=((I+2×padding−dilation×(kernel size−1)−1)/stride)1     **************
+​
+ 
+
+ในกรณีนี้:
+- `I`: ขนาด input (ในกรณีนี้คือ 1 เนื่องจากเราเริ่มจาก noise vector ขนาด 1x1)
+- `stride = 1`
+- `padding = 0`
+- `kernel size = 4`
+- `output padding = 0` (ค่า default)
+
+แทนค่าลงในสมการ:
+
+\[ \text{Output size} = (1 - 1) \times 1 - 2 \times 0 + 4 + 0 = 4 \]
+
+ดังนั้น ขนาด output ของเลเยอร์แรกจะเป็น 4x4
+
+เพื่อให้เข้าใจได้ง่ายขึ้น นี่คือการคำนวณในแต่ละเลเยอร์ของ generator:
+
+1. **Layer 1:**
+    - Input: `[batch_size, nz, 1, 1]` (เช่น `[1, 100, 1, 1]`)
+    - `ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False)`
+    - Output size: `(1 - 1) * 1 - 2 * 0 + 4 + 0 = 4`
+    - Output: `[batch_size, ngf * 8, 4, 4]` (เช่น `[1, 1024, 4, 4]` เมื่อ `ngf = 128`)
+
+2. **Layer 2:**
+    - Input: `[batch_size, ngf * 8, 4, 4]`
+    - `ConvTranspose2d(ngf * 8, ngf * 4, 4, 2, 1, bias=False)`
+    - Output size: `(4 - 1) * 2 - 2 * 1 + 4 + 0 = 8`
+    - Output: `[batch_size, ngf * 4, 8, 8]` (เช่น `[1, 512, 8, 8]`)
+
+3. **Layer 3:**
+    - Input: `[batch_size, ngf * 4, 8, 8]`
+    - `ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1, bias=False)`
+    - Output size: `(8 - 1) * 2 - 2 * 1 + 4 + 0 = 16`
+    - Output: `[batch_size, ngf * 2, 16, 16]` (เช่น `[1, 256, 16, 16]`)
+
+4. **Layer 4:**
+    - Input: `[batch_size, ngf * 2, 16, 16]`
+    - `ConvTranspose2d(ngf * 2, ngf, 4, 2, 1, bias=False)`
+    - Output size: `(16 - 1) * 2 - 2 * 1 + 4 + 0 = 32`
+    - Output: `[batch_size, ngf, 32, 32]` (เช่น `[1, 128, 32, 32]`)
+
+5. **Final Layer:**
+    - Input: `[batch_size, ngf, 32, 32]`
+    - `ConvTranspose2d(ngf, nc, 4, 2, 1, bias=False)`
+    - Output size: `(32 - 1) * 2 - 2 * 1 + 4 + 0 = 64`
+    - Output: `[batch_size, nc, 64, 64]` (เช่น `[1, 3, 64, 64]` สำหรับภาพสี RGB)
+
+การคำนวณเหล่านี้แสดงให้เห็นว่าขนาด output ในแต่ละเลเยอร์ถูกกำหนดอย่างไรในโครงสร้างของ DCGAN Generator
+
+
+
+
+
+
+
+
+
+
+
+# ngf = จำนวนของ feature maps (หรือ channels) ใน Generator ที่ใช้ในแต่ละขั้นตอนของการทำงานเพื่อสร้างภาพ.
+# nc  = num of chanel init image = 3 
+# nz = lenght of latent vector
