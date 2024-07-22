@@ -1,3 +1,5 @@
+## conda environment : Machine_learning_AI_builders
+
 import torch
 import torch.nn.modules
 import torch.utils
@@ -134,7 +136,7 @@ iters= 0
 # csv_df = pd.DataFrame(columns=columns)
 # csv_file_name = "result_log.csv" 
 # log_csv_path = os.path.join(os.path.join(r"D:\machine_learning_AI_Builders\บท4\GAN",csv_file_name)
-num_epochs = 5
+num_epochs = 1
 ####################################################################################  Train model ####################################################################################
 for epoch in range(num_epochs):
     for i,data in tqdm(enumerate(data_loader,0)):

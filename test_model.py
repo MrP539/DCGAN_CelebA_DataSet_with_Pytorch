@@ -71,7 +71,7 @@ discriminator.eval()
 
 # Test the loaded models (optional)
 # You can now use the generator to generate images
-fixed_noise = torch.randn(1, 100, 1, 1, device=device)
+fixed_noise = torch.randn(64, 100, 1, 1, device=device)
 with torch.no_grad():
     fake_images = generator(fixed_noise).detach().cpu()
 
@@ -81,5 +81,6 @@ image_grid = vutils.make_grid(fake_images, padding=2, normalize=True)
 image_np = np.transpose(image_grid, (1, 2, 0))
 
 # Display the image
+plt.title("Generate Images")
 plt.imshow(image_np)
 plt.show()
